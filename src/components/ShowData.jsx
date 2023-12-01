@@ -54,8 +54,8 @@ const ShowData = () => {
 
 
     const handlePageChange = (newPage) => {
-        const start = (newPage - 1) * pageSize;
-        const end = start + pageSize;
+        // const start = (newPage - 1) * pageSize;
+        // const end = start + pageSize;
         setCurrentPage(newPage);
         setSelectRows([]); 
     }
