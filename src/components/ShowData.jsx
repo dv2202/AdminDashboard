@@ -44,12 +44,16 @@ const ShowData = () => {
     }
 
     const handleDeleteRows = (e) => {
-        e.preventDefault();
-        const updateData = record.filter(row => !selectRows.includes(row.id))
-        setRecord(updateData);
-        setSelectRows([]);
-        setSelectAll(false);
-        toast.success('Selected rows deleted successfully!');
+        if(selectRows.length > 0){
+            e.preventDefault();
+            const updateData = record.filter(row => !selectRows.includes(row.id))
+            setRecord(updateData);
+            setSelectRows([]);
+            setSelectAll(false);
+            toast.success('Selected rows deleted successfully!');
+        }else{
+            toast.error('Select atleast 1 row')
+        }
     }
 
 
