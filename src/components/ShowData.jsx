@@ -1,76 +1,85 @@
 import React, { useState, useEffect } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import TopContainer from './TopContainer'
-import { MdDeleteOutline } from "react-icons/md";
-import { FaRegEdit } from "react-icons/fa";
+import TopContainer from './TopContainer';
+import { MdDeleteOutline } from 'react-icons/md';
+import { FaRegEdit } from 'react-icons/fa';
 import './CustomToastStyles.css';
 
-
-
 const ShowData = () => {
-    const [record, setRecord] = useState([]);
-    const [selectall, setSelectAll] = useState(false);
-    const [selectRows, setSelectRows] = useState([]);
-    const [pages, setPages] = useState(0);
-    const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 10;
+  const [record, setRecord] = useState([]);
+//   const [originalData, setOriginalData] = useState([]);
+  const [selectall, setSelectAll] = useState(false);
+  const [selectRows, setSelectRows] = useState([]);
+  const [pages, setPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        fetch("https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json")
-            .then(response => response.json())
-            .then(data => {
-                setRecord(data);
-                setPages(Math.ceil(data.length / pageSize));
-            })
-            .catch(err => console.log(err));
-    }, []);
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
+  };
 
-    const pageNumber = Array.from({ length: pages }, (_, index) => index + 1);
+  useEffect(() => {
+    fetch('https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json')
+      .then((response) => response.json())
+      .then((data) => {
+        const filterData = data.filter(
+          (item) =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.role.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setRecord(filterData);
+        // setOriginalData(data);
+        setPages(Math.ceil(filterData.length / pageSize));
+      })
+      .catch((err) => console.log(err));
+  }, [searchTerm]);
 
-    const handleCheckBox = (id) => {
-        if (id === 'all') {
-            setSelectAll(!selectall);
-            setSelectRows(selectall ? [] : record.map(row => row.id));
+  const pageNumber = Array.from({ length: pages }, (_, index) => index + 1);
+
+  const handleCheckBox = (id) => {
+    if (id === 'all') {
+      setSelectAll(!selectall);
+      setSelectRows(selectall ? [] : record.map((row) => row.id));
+    } else {
+      setSelectRows((prevSelectRows) => {
+        if (prevSelectRows.includes(id)) {
+          return prevSelectRows.filter((rowID) => rowID !== id);
         } else {
-            setSelectRows(prevSelectRows => {
-                if (prevSelectRows.includes(id)) {
-                    return prevSelectRows.filter(rowID => rowID !== id);
-                } else {
-                    return [...prevSelectRows, id];
-                }
-            });
+          return [...prevSelectRows, id];
         }
+      });
     }
+  };
 
-    const handleDeleteRows = (e) => {
-        if(selectRows.length > 0){
-            e.preventDefault();
-            const updateData = record.filter(row => !selectRows.includes(row.id))
-            setRecord(updateData);
-            setSelectRows([]);
-            setSelectAll(false);
-            toast.success('Selected rows deleted successfully!');
-        }else{
-            toast.error('Select atleast 1 row')
-        }
+  const handleDeleteRows = (e) => {
+    if (selectRows.length > 0) {
+      e.preventDefault();
+      const updateData = record.filter((row) => !selectRows.includes(row.id));
+      setRecord(updateData);
+      setSelectRows([]);
+      setSelectAll(false);
+      toast.success('Selected rows deleted successfully!');
+    } else {
+      toast.error('Select at least 1 row');
     }
+  };
 
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    setSelectRows([]);
+  };
 
-    const handlePageChange = (newPage) => {
-        // const start = (newPage - 1) * pageSize;
-        // const end = start + pageSize;
-        setCurrentPage(newPage);
-        setSelectRows([]); 
-    }
+  const handelEdit = () => {
+    // Implement your edit functionality here
+  };
 
-    const handelEdit = () => {
-
-    }
     
     return (
         <div>
-            <TopContainer onDelete = {handleDeleteRows}/>
+            <TopContainer onDelete = {handleDeleteRows} onSearchChange={handleSearchChange}/>
             <ToastContainer autoClose={1500}/>
             <table className="w-4/5 mx-auto ">
                 <thead className='border'>
@@ -123,7 +132,7 @@ const ShowData = () => {
 
 
             <div className='flex justify-between items-center w-4/5 mt-3 mx-auto mb-3'>
-                <div className='font-medium text-sm items-center text-gray-500 '>{(currentPage - 1) * pageSize} of {record.length} row(s) selected</div>
+            <div className='font-medium text-sm items-center text-gray-500 '>{`${selectRows.length} of ${record.length} row(s) selected`}</div>
 
                 <div className='flex flex-row items-center justify-end'>
                     <div className="font-medium text-sm items-center text-gray-500 mr-3">
